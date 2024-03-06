@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 
+import '../models/launch_model.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -17,27 +19,128 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
       ),
-      home: const ProductPage(),
+      home: const MissionPage(),
     );
   }
 }
 
-class ProductPage extends StatefulWidget {
-  const ProductPage({super.key});
+class MissionPage extends StatefulWidget {
+  const MissionPage({super.key});
 
   @override
-  State<ProductPage> createState() => _ProductPageState();
+  State<MissionPage> createState() => _MissionPageState();
 }
 
-class _ProductPageState extends State<ProductPage> {
+class _MissionPageState extends State<MissionPage> {
+  late Future<List<Launch>> futureLaunchList;
+
+  Future<List<Launch>> fetchData() async {
+    Uri uriObject = Uri.parse('https://api.spacexdata.com/v3/missions');
+    final response = await http.get(uriObject);
+
+    if (response.statusCode == 200) {
+      final body = json.decode(response.body);
+      List<dynamic> parseListJson = body;
+
+      // cant access by iterable through index
+      List<Launch> items = List<Launch>.from(
+        //map returns and interable
+        parseListJson.map<Launch>((dynamic launch) => Launch.fromJson(launch)),
+      );
+
+      //.from is more optimized than .tolist()
+      return items;
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    futureLaunchList = fetchData();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Space Missions"),
+        backgroundColor: Colors.orangeAccent,
+      ),
+      body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: FutureBuilder(
+              future: futureLaunchList,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      var launch = snapshot.data![index];
+
+                      return Card(
+                        margin: EdgeInsets.symmetric(vertical: 15),
+                        child: Padding(
+                          padding: const EdgeInsets.all(15),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  launch.missionName!,
+                                  style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  launch.description!,
+                                  style: TextStyle(fontSize: 15),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                  MaterialButton(
+                                    onPressed: () {},
+                                    child: Row(
+                                      children: [
+                                        Text("More",
+                                          style: TextStyle(fontSize: 16),),
+                                        Icon(Icons.arrow_downward),
+                                      ],
+                                    ),
+                                    color: Colors.orangeAccent,
+                                    textColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12)),
+                                  )
+                                ]),
+                                Wrap(
+                                  alignment: WrapAlignment.center,
+                                  children: [
+                                    for(var item in launch.payloadIds!)
+                                      Padding(
+                                        padding: const EdgeInsets.all(4.0),
+                                        child: Chip(label: Text(item)),
+                                      )
+                                ],
+                                )
+                              ]),
+                        ),
+                      );
+                    },
+                  );
+                } else if (snapshot.hasError) {
+                  return Text(snapshot.error.toString());
+                }
+
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.orange,
+                  ),
+                );
+              })),
+    );
   }
 }
