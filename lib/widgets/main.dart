@@ -1,3 +1,5 @@
+import 'dart:js_util';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -78,7 +80,7 @@ class _MissionPageState extends State<MissionPage> {
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, index) {
                       var launch = snapshot.data![index];
-
+                      var expanded = false;
                       return Card(
                         margin: EdgeInsets.symmetric(vertical: 15),
                         child: Padding(
@@ -92,39 +94,54 @@ class _MissionPageState extends State<MissionPage> {
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold),
                                 ),
-                                Text(
-                                  launch.description!,
-                                  style: TextStyle(fontSize: 15),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                if (expanded)
+                                  Text(
+                                    launch.description!,
+                                    style: TextStyle(fontSize: 15),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                  MaterialButton(
-                                    onPressed: () {},
-                                    child: Row(
-                                      children: [
-                                        Text("More",
-                                          style: TextStyle(fontSize: 16),),
-                                        Icon(Icons.arrow_downward),
-                                      ],
-                                    ),
-                                    color: Colors.orangeAccent,
-                                    textColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12)),
-                                  )
-                                ]),
-                                Wrap(
-                                  alignment: WrapAlignment.center,
-                                  children: [
-                                    for(var item in launch.payloadIds!)
-                                      Padding(
-                                        padding: const EdgeInsets.all(4.0),
-                                        child: Chip(label: Text(item)),
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      MaterialButton(
+                                        onPressed: () {
+                                          if (expanded) {
+                                            expanded = false;
+                                          } else {
+                                            expanded = true;
+                                          }
+                                        },
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              "More",
+                                              style: TextStyle(fontSize: 16),
+                                            ),
+                                            Icon(Icons.arrow_downward),
+                                          ],
+                                        ),
+                                        color: Colors.orangeAccent,
+                                        textColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12)),
                                       )
-                                ],
+                                    ]),
+                                Center(
+                                  child: Wrap(
+                                    spacing: 12,
+                                    children: [
+                                          var generatedColor = Random().nextInt(Colors.primaries.length)
+                                          Colors.primaries[generatedColor]
+                                      for (var item in launch.payloadIds!)
+                                        Chip(
+                                          label: Text(item),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30)),
+                                        )
+                                    ],
+                                  ),
                                 )
                               ]),
                         ),
