@@ -131,8 +131,8 @@ class _MissionPageState extends State<MissionPage> {
                                   child: Wrap(
                                     spacing: 12,
                                     children: [
-                                          var generatedColor = Random().nextInt(Colors.primaries.length)
-                                          Colors.primaries[generatedColor]
+                                          // var generatedColor = Random().nextInt(Colors.primaries.length)
+                                          // Colors.primaries[generatedColor]
                                       for (var item in launch.payloadIds!)
                                         Chip(
                                           label: Text(item),
